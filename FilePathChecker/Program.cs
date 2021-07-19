@@ -145,7 +145,8 @@ namespace FilePathChecker
                 {
                     validFiles.Add(line);
                     FileInfo fi = new FileInfo(line);
-                    myFiles.Add(string.Concat(fi.Directory.ToString().Replace("\\", String.Empty), " - ", fi.Name), fi.LastWriteTime);
+                    if (fi.Directory != null)
+                        myFiles.Add(string.Concat(fi.Directory.ToString().Replace("\\", String.Empty), " - ", fi.Name), fi.LastWriteTime);
                 }
                 
 
@@ -191,14 +192,9 @@ namespace FilePathChecker
                 }
             }
             statusWindow.WriteLine("Results exported!");
-            if(validFiles.Count > 0)
-            {
-                statusWindow.WriteLine($"Files modified between {minDate.ToShortDateString()}and {maxDate.ToShortDateString()}.");
-            }
-            else
-            {
-                statusWindow.WriteLine($"No valid file paths found!");
-            }
+            statusWindow.WriteLine(validFiles.Count > 0
+                ? $"Files modified between {minDate.ToShortDateString()}and {maxDate.ToShortDateString()}."
+                : $"No valid file paths found!");
 
             Console.WriteLine("Done! Press any key to exit application.");
             Console.ReadLine();
