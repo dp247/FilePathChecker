@@ -1,5 +1,11 @@
-# File Path Checker
-The aptly named File Path Checker is a utility I wrote that just pings .NET's File.Exists function for a list of file paths to save you having to check them manually. That's it, it's just a fancy wrapper.
+<img width="674" alt="4" src="https://user-images.githubusercontent.com/9065463/126277663-15c31be6-359e-40f7-81f6-8d9016ed7108.png">
 
-## But why?
-The program was born out of a need to check thousands of file paths stored in an SQL Server database (document attachments that may or may not exist on a file server, as "house keeping was very intermitent", as my manager put it). We needed a list of files that definitely existed, as well as when they were last modified to see what could stay and what could go. Rather than spend hours and hours manually checking each file path, I made this utility, and have used it more than I planned to since (turns out there's a lot of files that may or may not exist).
+# File Path Checker
+File Path Checker is a command-line application designed to check the validity of a list of file paths. It's designed to take the monotony out of checking if thousands of files exist by repeatedly calling .NET's File.Exists function for each line of an input file.
+
+The program will  parse the input file into two lists - valid files, where the file path exists and can be located; and invalid files, where the file cannot be found.
+
+## Formatting input files
+
+
+##Application walkthrough
