@@ -2,12 +2,14 @@
 using static System.Console;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Konsole;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace FilePathChecker
 {
@@ -52,6 +54,24 @@ namespace FilePathChecker
         static string path;
         public static int lineCount = 0;
         static string filename;
+
+        static string CleanInput(string strIn)
+        {
+            // Replace invalid characters with empty strings.
+            try
+            {
+                return Regex.Replace(strIn, @"[^\w\.:@\s\-\\%]", "",
+                                     RegexOptions.None, TimeSpan.FromSeconds(1.5));
+            }
+            // If we timeout when replacing invalid characters,
+            // we should return Empty.
+            catch (RegexMatchTimeoutException)
+            {
+                return String.Empty;
+            }
+        }
+
+        //TODO: Add custom file drop locations using application settings
 
         /// <summary>
         /// Validates a .txt file in the user's My Documents folder
@@ -119,6 +139,7 @@ namespace FilePathChecker
 
             CheckFile();
 
+            //TODO: Check if output files already exist before creating again
             string validFileExportName = String.Concat(filename, "_", "valid.txt");
             string validFileAndDateExportName = String.Concat(filename, "_", "valid_with_dates.txt");
             string invalidFileExportName = String.Concat(filename, "_", "invalid.txt");
@@ -136,19 +157,24 @@ namespace FilePathChecker
 
             while ((line = file.ReadLine()) != null)
             {
+                var cleanLine = CleanInput(line);
+                Debug.WriteLine($"Regular line: {line}");
+                Debug.WriteLine($"Clean line: {cleanLine}");
 
-                if (!File.Exists(line))
+
+                if (!File.Exists(cleanLine))
                 {
                     invalidFiles.Add(line);
+                    Debug.WriteLine("INVALID");
                 }
                 else
                 {
-                    validFiles.Add(line);
-                    FileInfo fi = new FileInfo(line);
-                    if (fi.Directory != null)
-                        myFiles.Add(string.Concat(fi.Directory.ToString().Replace("\\", String.Empty), " - ", fi.Name), fi.LastWriteTime);
+                    validFiles.Add(cleanLine);
+                    Debug.WriteLine("VALID");
+                    FileInfo fi = new FileInfo(cleanLine);
+                    myFiles.Add(string.Concat(fi.Directory.ToString().Replace("\\", String.Empty), " - ", fi.Name), fi.LastWriteTime);
                 }
-                
+
 
                 ++counter;
                 progress.Refresh(counter, "Progress");
@@ -175,11 +201,11 @@ namespace FilePathChecker
             File.WriteAllLines(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), invalidFileExportName), invalidFiles);
 
             using (StreamWriter writer = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), validFileAndDateExportName)))
-            foreach (var item in myFiles)
-            {
-                writer.WriteLine("[{0} | {1}]", item.Key, item.Value);
-            }
-            
+                foreach (var item in myFiles)
+                {
+                    writer.WriteLine("[{0} | {1}]", item.Key, item.Value);
+                }
+
             foreach (var item in myFiles)
             {
                 if (item.Value < minDate)
@@ -192,9 +218,14 @@ namespace FilePathChecker
                 }
             }
             statusWindow.WriteLine("Results exported!");
-            statusWindow.WriteLine(validFiles.Count > 0
-                ? $"Files modified between {minDate.ToShortDateString()}and {maxDate.ToShortDateString()}."
-                : $"No valid file paths found!");
+            if (validFiles.Count > 0)
+            {
+                statusWindow.WriteLine($"Files modified between {minDate.ToShortDateString()}and {maxDate.ToShortDateString()}.");
+            }
+            else
+            {
+                statusWindow.WriteLine($"No valid file paths found!");
+            }
 
             Console.WriteLine("Done! Press any key to exit application.");
             Console.ReadLine();
