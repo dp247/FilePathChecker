@@ -4,8 +4,3 @@
 File Path Checker is a command-line application designed to check the validity of a list of file paths. It's designed to take the monotony out of checking if thousands of files exist by repeatedly calling .NET's File.Exists function for each line of an input file.
 
 The program will  parse the input file into two lists - valid files, where the file path exists and can be located; and invalid files, where the file cannot be found.
-
-## Formatting input files
-
-
-##Application walkthrough
